@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import Navigation from "@/components/Navigation";
 import Timer from "@/components/Timer";
@@ -211,9 +210,9 @@ const MemoryGame = () => {
       case "easy":
         return "grid-cols-4";
       case "medium":
-        return "grid-cols-4 md:grid-cols-6";
+        return "grid-cols-6";
       case "hard":
-        return "grid-cols-4 md:grid-cols-8";
+        return "grid-cols-8";
       default:
         return "grid-cols-4";
     }
@@ -281,40 +280,40 @@ const MemoryGame = () => {
             </div>
           </div>
           
-          {/* Game Board */}
-          <div className={`grid ${getGridConfig()} gap-2 md:gap-4`}>
-            {cards.map((card) => (
-              <div 
-                key={card.id}
-                className={`relative aspect-square cursor-pointer transform transition-all duration-300 ${
-                  card.isFlipped ? "rotate-y-180" : ""
-                }`}
-                onClick={() => handleCardClick(card.id)}
-                style={{ perspective: "1000px" }}
-              >
-                <div
-                  className={`absolute inset-0 rounded-lg bg-gradient-to-br from-pastel-purple to-pastel-blue flex items-center justify-center shadow-md ${
-                    card.isFlipped || card.isMatched
-                      ? "opacity-0"
-                      : "opacity-100"
-                  } transition-opacity duration-300 backface-hidden`}
+          {/* Game Board - Using a fixed height container with responsive grid */}
+          <div className="relative max-w-4xl mx-auto">
+            <div className={`grid ${getGridConfig()} gap-2 md:gap-4`}>
+              {cards.map((card) => (
+                <div 
+                  key={card.id}
+                  className="aspect-square cursor-pointer transform transition-all duration-300"
+                  onClick={() => handleCardClick(card.id)}
+                  style={{ perspective: "1000px" }}
                 >
-                  <span className="text-2xl">?</span>
+                  <div
+                    className={`absolute inset-0 rounded-lg bg-gradient-to-br from-pastel-purple to-pastel-blue flex items-center justify-center shadow-md ${
+                      card.isFlipped || card.isMatched
+                        ? "opacity-0"
+                        : "opacity-100"
+                    } transition-opacity duration-300 backface-hidden`}
+                  >
+                    <span className="text-2xl">?</span>
+                  </div>
+                  
+                  <div
+                    className={`absolute inset-0 rounded-lg bg-white flex items-center justify-center ${
+                      card.isFlipped || card.isMatched
+                        ? "opacity-100"
+                        : "opacity-0"
+                    } transition-opacity duration-300 backface-hidden ${
+                      card.isMatched ? "bg-pastel-green bg-opacity-30" : ""
+                    }`}
+                  >
+                    <span className="text-4xl">{card.emoji}</span>
+                  </div>
                 </div>
-                
-                <div
-                  className={`absolute inset-0 rounded-lg bg-white flex items-center justify-center ${
-                    card.isFlipped || card.isMatched
-                      ? "opacity-100"
-                      : "opacity-0"
-                  } transition-opacity duration-300 backface-hidden ${
-                    card.isMatched ? "bg-pastel-green bg-opacity-30" : ""
-                  }`}
-                >
-                  <span className="text-4xl">{card.emoji}</span>
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
           
           {/* Game Over Message */}

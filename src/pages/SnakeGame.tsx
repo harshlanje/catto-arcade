@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef, useCallback } from "react";
 import Navigation from "@/components/Navigation";
 import { Link } from "react-router-dom";
@@ -45,12 +44,14 @@ const SnakeGame = () => {
     
     contextRef.current = context;
     
-    // Set canvas dimensions
+    // Set canvas dimensions - fixed maximum size
     const updateCanvasSize = () => {
-      const size = Math.min(window.innerWidth - 40, 600);
-      canvas.width = size;
-      canvas.height = size;
-      setTileSize(size / tileCount);
+      const maxSize = Math.min(window.innerWidth - 40, 500);
+      canvas.width = maxSize;
+      canvas.height = maxSize;
+      
+      // Always maintain proper tile size based on fixed canvas dimensions
+      setTileSize(maxSize / tileCount);
     };
     
     // Set difficulty-based parameters
@@ -82,7 +83,7 @@ const SnakeGame = () => {
     return () => {
       window.removeEventListener("resize", updateCanvasSize);
     };
-  }, [currentDifficulty]);
+  }, [currentDifficulty, tileCount]);
   
   // Reset game state
   const resetGame = () => {
@@ -97,22 +98,23 @@ const SnakeGame = () => {
     placeFood();
   };
   
-  // Place food at random location
+  // Place food at random location - improved to ensure visibility
   const placeFood = () => {
+    // Ensure we place food within bounds
     const newFood = {
-      x: Math.floor(Math.random() * tileCount),
-      y: Math.floor(Math.random() * tileCount)
+      x: Math.floor(Math.random() * (tileCount - 2)) + 1,
+      y: Math.floor(Math.random() * (tileCount - 2)) + 1
     };
     
     // Ensure food doesn't spawn on snake
     if (snake.some(segment => segment.x === newFood.x && segment.y === newFood.y)) {
-      placeFood();
+      placeFood(); // Recursively try again
     } else {
       setFood(newFood);
     }
   };
   
-  // Handle arrow key presses
+  // Handle arrow key presses - Fixed type comparison errors
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
     // Start the game if it's not started yet
     if (!gameStarted && !gameOver) {
@@ -130,7 +132,7 @@ const SnakeGame = () => {
     // Don't change direction if game is paused or over
     if (!gameStarted || gamePaused || gameOver) return;
     
-    // Prevent reversing direction
+    // Prevent reversing direction - fixed comparison types
     switch (e.key) {
       case "ArrowUp":
         if (direction !== "DOWN") setNextDirection("UP");
@@ -156,8 +158,8 @@ const SnakeGame = () => {
     };
   }, [handleKeyDown]);
   
-  // Touch controls for mobile
-  const handleSwipe = (direction: Direction) => {
+  // Touch controls for mobile - Fixed type comparison errors
+  const handleSwipe = (swipeDirection: Direction) => {
     // Start the game if it's not started yet
     if (!gameStarted && !gameOver) {
       setGameStarted(true);
@@ -167,19 +169,14 @@ const SnakeGame = () => {
     if (gamePaused || gameOver) return;
     
     // Prevent reversing direction
-    switch (direction) {
-      case "UP":
-        if (direction !== "DOWN") setNextDirection("UP");
-        break;
-      case "DOWN":
-        if (direction !== "UP") setNextDirection("DOWN");
-        break;
-      case "LEFT":
-        if (direction !== "RIGHT") setNextDirection("LEFT");
-        break;
-      case "RIGHT":
-        if (direction !== "LEFT") setNextDirection("RIGHT");
-        break;
+    if (swipeDirection === "UP" && direction !== "DOWN") {
+      setNextDirection("UP");
+    } else if (swipeDirection === "DOWN" && direction !== "UP") {
+      setNextDirection("DOWN");
+    } else if (swipeDirection === "LEFT" && direction !== "RIGHT") {
+      setNextDirection("LEFT");
+    } else if (swipeDirection === "RIGHT" && direction !== "LEFT") {
+      setNextDirection("RIGHT");
     }
   };
   
@@ -301,7 +298,7 @@ const SnakeGame = () => {
     };
   }, [gameStarted, gamePaused, gameOver, snake, direction, nextDirection, food, tileCount, score, speed, user, currentDifficulty, addScore]);
   
-  // Draw game
+  // Draw game with improved food visibility
   useEffect(() => {
     if (!contextRef.current || !canvasRef.current) return;
     
@@ -324,12 +321,12 @@ const SnakeGame = () => {
       }
     }
     
-    // Draw food
-    ctx.fillStyle = "#FEC6A1";
-    ctx.shadowBlur = 10;
-    ctx.shadowColor = "rgba(254, 198, 161, 0.5)";
+    // Draw food with enhanced visibility
+    ctx.fillStyle = "#FE6A00"; // Brighter orange
+    ctx.shadowBlur = 15;
+    ctx.shadowColor = "rgba(255, 100, 0, 0.8)";
     
-    const foodRadius = tileSize / 2 * 0.8;
+    const foodRadius = Math.max(tileSize / 2 * 0.9, 5); // Ensure minimum size
     ctx.beginPath();
     ctx.arc(
       food.x * tileSize + tileSize / 2,
@@ -338,6 +335,19 @@ const SnakeGame = () => {
       0,
       Math.PI * 2
     );
+    ctx.fill();
+    
+    // Add a pulsing effect to food
+    const pulseFactor = 1 + 0.1 * Math.sin(Date.now() / 200);
+    ctx.beginPath();
+    ctx.arc(
+      food.x * tileSize + tileSize / 2,
+      food.y * tileSize + tileSize / 2,
+      foodRadius * pulseFactor * 0.7,
+      0,
+      Math.PI * 2
+    );
+    ctx.fillStyle = "rgba(255, 255, 255, 0.6)";
     ctx.fill();
     
     ctx.shadowBlur = 0;
