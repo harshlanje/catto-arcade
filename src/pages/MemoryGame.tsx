@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import Navigation from "@/components/Navigation";
 import Timer from "@/components/Timer";
@@ -280,7 +281,7 @@ const MemoryGame = () => {
             </div>
           </div>
           
-          {/* Game Board - Using a fixed height container with responsive grid */}
+          {/* Game Board - Using a consistent grid layout with fixed card sizes */}
           <div className="relative max-w-4xl mx-auto">
             <div className={`grid ${getGridConfig()} gap-2 md:gap-4`}>
               {cards.map((card) => (
@@ -288,7 +289,12 @@ const MemoryGame = () => {
                   key={card.id}
                   className="aspect-square cursor-pointer transform transition-all duration-300"
                   onClick={() => handleCardClick(card.id)}
-                  style={{ perspective: "1000px" }}
+                  style={{ 
+                    perspective: "1000px",
+                    width: "100%",
+                    maxWidth: currentDifficulty === "hard" ? "65px" : (currentDifficulty === "medium" ? "80px" : "100px"),
+                    margin: "0 auto"
+                  }}
                 >
                   <div
                     className={`absolute inset-0 rounded-lg bg-gradient-to-br from-pastel-purple to-pastel-blue flex items-center justify-center shadow-md ${

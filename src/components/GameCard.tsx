@@ -1,6 +1,5 @@
 
 import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
 
 type GameCardProps = {
   title: string;
@@ -11,7 +10,7 @@ type GameCardProps = {
 
 const GameCard = ({ title, description, image, path }: GameCardProps) => {
   return (
-    <div className="game-card h-full flex flex-col">
+    <div className="game-card h-full flex flex-col rounded-lg overflow-hidden shadow-md bg-card border border-border">
       <div className="h-48 overflow-hidden">
         <img
           src={image}
