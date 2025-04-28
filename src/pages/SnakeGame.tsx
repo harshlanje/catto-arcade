@@ -86,7 +86,7 @@ const SnakeGame = () => {
   }, [currentDifficulty, tileCount]);
   
   // Reset game state
-  const resetGame = () => {
+  const resetGame = useCallback(() => {
     const initialPos = Math.floor(tileCount / 2);
     setSnake([{ x: initialPos, y: initialPos }]);
     setDirection("RIGHT");
@@ -96,29 +96,43 @@ const SnakeGame = () => {
     setGameOver(false);
     setScore(0);
     placeFood();
-  };
+  }, [tileCount]);
   
   // Place food at random location - improved to ensure it's always within bounds
-  const placeFood = () => {
-    // Ensure we place food well within bounds (subtract 1 to prevent edge placement)
-    const newFood = {
-      x: Math.floor(Math.random() * (tileCount - 2)) + 1,
-      y: Math.floor(Math.random() * (tileCount - 2)) + 1
-    };
+  const placeFood = useCallback(() => {
+    // Get the safe area based on current tile count (add buffer to keep away from edges)
+    const safeMin = 2;
+    const safeMax = tileCount - 3;
     
-    // Additional checks to guarantee food is within playable area
-    const validFood = {
-      x: Math.max(1, Math.min(newFood.x, tileCount - 2)),
-      y: Math.max(1, Math.min(newFood.y, tileCount - 2))
+    // If safeMax is less than safeMin, adjust to prevent errors
+    const adjustedMax = Math.max(safeMax, safeMin + 1);
+    
+    // Generate coordinates within the safe area
+    const newFood = {
+      x: Math.floor(Math.random() * (adjustedMax - safeMin + 1)) + safeMin,
+      y: Math.floor(Math.random() * (adjustedMax - safeMin + 1)) + safeMin
     };
     
     // Ensure food doesn't spawn on snake
-    if (snake.some(segment => segment.x === validFood.x && segment.y === validFood.y)) {
-      placeFood(); // Recursively try again
+    if (snake.some(segment => segment.x === newFood.x && segment.y === newFood.y)) {
+      // Try again recursively, but with a safety check to prevent infinite loops
+      if (snake.length < (tileCount - 4) * (tileCount - 4)) {
+        placeFood();
+      } else {
+        // If snake is too big, find first available spot
+        for (let x = safeMin; x <= adjustedMax; x++) {
+          for (let y = safeMin; y <= adjustedMax; y++) {
+            if (!snake.some(segment => segment.x === x && segment.y === y)) {
+              setFood({ x, y });
+              return;
+            }
+          }
+        }
+      }
     } else {
-      setFood(validFood);
+      setFood(newFood);
     }
-  };
+  }, [snake, tileCount]);
   
   // Handle arrow key presses - Fixed type comparison errors
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
@@ -480,10 +494,22 @@ const SnakeGame = () => {
     }
   }, [snake, food, tileCount, tileSize, gameOver, gameStarted, gamePaused, score, direction]);
   
-  // Reset game when difficulty changes
+  // Reset game when difficulty changes 
   useEffect(() => {
+    const updateFoodPosition = () => {
+      // Make sure food is within bounds for current tile count
+      const safeMin = 2;
+      const safeMax = tileCount - 3;
+      
+      // Check if current food is outside safe area
+      if (food.x < safeMin || food.x > safeMax || food.y < safeMin || food.y > safeMax) {
+        placeFood();
+      }
+    };
+    
     resetGame();
-  }, [currentDifficulty]);
+    updateFoodPosition();
+  }, [currentDifficulty, tileCount, food, placeFood, resetGame]);
   
   return (
     <div className="min-h-screen flex flex-col">
