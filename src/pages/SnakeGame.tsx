@@ -98,19 +98,25 @@ const SnakeGame = () => {
     placeFood();
   };
   
-  // Place food at random location - improved to ensure visibility
+  // Place food at random location - improved to ensure it's always within bounds
   const placeFood = () => {
-    // Ensure we place food within bounds
+    // Ensure we place food well within bounds (subtract 1 to prevent edge placement)
     const newFood = {
       x: Math.floor(Math.random() * (tileCount - 2)) + 1,
       y: Math.floor(Math.random() * (tileCount - 2)) + 1
     };
     
+    // Additional checks to guarantee food is within playable area
+    const validFood = {
+      x: Math.max(1, Math.min(newFood.x, tileCount - 2)),
+      y: Math.max(1, Math.min(newFood.y, tileCount - 2))
+    };
+    
     // Ensure food doesn't spawn on snake
-    if (snake.some(segment => segment.x === newFood.x && segment.y === newFood.y)) {
+    if (snake.some(segment => segment.x === validFood.x && segment.y === validFood.y)) {
       placeFood(); // Recursively try again
     } else {
-      setFood(newFood);
+      setFood(validFood);
     }
   };
   
