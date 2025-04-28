@@ -85,19 +85,6 @@ const SnakeGame = () => {
     };
   }, [currentDifficulty, tileCount]);
   
-  // Reset game state
-  const resetGame = useCallback(() => {
-    const initialPos = Math.floor(tileCount / 2);
-    setSnake([{ x: initialPos, y: initialPos }]);
-    setDirection("RIGHT");
-    setNextDirection("RIGHT");
-    setGameStarted(false);
-    setGamePaused(false);
-    setGameOver(false);
-    setScore(0);
-    placeFood();
-  }, [tileCount]);
-  
   // Place food at random location - improved to ensure it's always within bounds
   const placeFood = useCallback(() => {
     // Get the safe area based on current tile count (add buffer to keep away from edges)
@@ -133,6 +120,31 @@ const SnakeGame = () => {
       setFood(newFood);
     }
   }, [snake, tileCount]);
+  
+  // Reset game state - Important: Define resetGame after placeFood since it depends on it
+  const resetGame = useCallback(() => {
+    const initialPos = Math.floor(tileCount / 2);
+    setSnake([{ x: initialPos, y: initialPos }]);
+    setDirection("RIGHT");
+    setNextDirection("RIGHT");
+    setGameStarted(false);
+    setGamePaused(false);
+    setGameOver(false);
+    setScore(0);
+    
+    // Instead of calling placeFood directly, use setTimeout to defer it
+    // This breaks the circular dependency chain
+    setTimeout(() => {
+      const safeMin = 2;
+      const safeMax = tileCount - 3;
+      const adjustedMax = Math.max(safeMax, safeMin + 1);
+      
+      setFood({
+        x: Math.floor(Math.random() * (adjustedMax - safeMin + 1)) + safeMin,
+        y: Math.floor(Math.random() * (adjustedMax - safeMin + 1)) + safeMin
+      });
+    }, 0);
+  }, [tileCount]);
   
   // Handle arrow key presses - Fixed type comparison errors
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
@@ -293,8 +305,45 @@ const SnakeGame = () => {
         setPlaySuccessSound(true);
         setTimeout(() => setPlaySuccessSound(false), 100);
         
-        // Place new food
-        placeFood();
+        // Place new food - using the same approach as in resetGame to avoid circular dependencies
+        setTimeout(() => {
+          const safeMin = 2;
+          const safeMax = tileCount - 3;
+          const adjustedMax = Math.max(safeMax, safeMin + 1);
+          
+          // Try to find a spot not occupied by the snake
+          let newFoodX, newFoodY;
+          let found = false;
+          
+          // Try up to 10 times to find a suitable spot
+          for (let attempt = 0; attempt < 10 && !found; attempt++) {
+            newFoodX = Math.floor(Math.random() * (adjustedMax - safeMin + 1)) + safeMin;
+            newFoodY = Math.floor(Math.random() * (adjustedMax - safeMin + 1)) + safeMin;
+            
+            // Check if this spot is occupied by the snake
+            if (!newSnake.some(segment => segment.x === newFoodX && segment.y === newFoodY)) {
+              found = true;
+            }
+          }
+          
+          // If we couldn't find a spot after 10 attempts, find first available spot
+          if (!found) {
+            for (let x = safeMin; x <= adjustedMax && !found; x++) {
+              for (let y = safeMin; y <= adjustedMax && !found; y++) {
+                if (!newSnake.some(segment => segment.x === x && segment.y === y)) {
+                  newFoodX = x;
+                  newFoodY = y;
+                  found = true;
+                }
+              }
+            }
+          }
+          
+          // Set the new food position
+          if (found) {
+            setFood({ x: newFoodX, y: newFoodY });
+          }
+        }, 0);
       } else {
         // Remove tail if no food eaten
         newSnake.pop();
@@ -316,7 +365,7 @@ const SnakeGame = () => {
     return () => {
       clearInterval(gameInterval);
     };
-  }, [gameStarted, gamePaused, gameOver, snake, direction, nextDirection, food, tileCount, score, speed, user, currentDifficulty, addScore]);
+  }, [gameStarted, gamePaused, gameOver, snake, direction, nextDirection, food, tileCount, score, speed, user, currentDifficulty, addScore, placeFood]);
   
   // Draw game with improved food visibility
   useEffect(() => {
@@ -494,22 +543,34 @@ const SnakeGame = () => {
     }
   }, [snake, food, tileCount, tileSize, gameOver, gameStarted, gamePaused, score, direction]);
   
-  // Reset game when difficulty changes 
+  // Initialize game when difficulty changes
   useEffect(() => {
-    const updateFoodPosition = () => {
-      // Make sure food is within bounds for current tile count
-      const safeMin = 2;
-      const safeMax = tileCount - 3;
+    // Initialize game once on mount and whenever difficulty changes
+    const initializeGame = () => {
+      const initialPos = Math.floor(tileCount / 2);
+      setSnake([{ x: initialPos, y: initialPos }]);
+      setDirection("RIGHT");
+      setNextDirection("RIGHT");
+      setGameStarted(false);
+      setGamePaused(false);
+      setGameOver(false);
+      setScore(0);
       
-      // Check if current food is outside safe area
-      if (food.x < safeMin || food.x > safeMax || food.y < safeMin || food.y > safeMax) {
-        placeFood();
-      }
+      // Use setTimeout to break dependency cycle
+      setTimeout(() => {
+        const safeMin = 2;
+        const safeMax = tileCount - 3;
+        const adjustedMax = Math.max(safeMax, safeMin + 1);
+        
+        setFood({
+          x: Math.floor(Math.random() * (adjustedMax - safeMin + 1)) + safeMin,
+          y: Math.floor(Math.random() * (adjustedMax - safeMin + 1)) + safeMin
+        });
+      }, 0);
     };
     
-    resetGame();
-    updateFoodPosition();
-  }, [currentDifficulty, tileCount, food, placeFood, resetGame]);
+    initializeGame();
+  }, [currentDifficulty, tileCount]);
   
   return (
     <div className="min-h-screen flex flex-col">
