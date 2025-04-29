@@ -4,9 +4,12 @@ import Navigation from "@/components/Navigation";
 import Timer from "@/components/Timer";
 import DifficultySelector from "@/components/DifficultySelector";
 import { useGame } from "@/contexts/GameContext";
-import { Settings, RotateCcw, ArrowLeft } from "lucide-react";
+import { Settings, RotateCcw, ArrowLeft, Volume2, VolumeX } from "lucide-react";
 import { Link } from "react-router-dom";
 import SoundEffect from "@/components/SoundEffect";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 
 // Define card types
 type CardType = {
@@ -17,7 +20,7 @@ type CardType = {
 };
 
 const MemoryGame = () => {
-  const { currentDifficulty, addScore, user } = useGame();
+  const { currentDifficulty, addScore, user, soundEnabled, toggleSound } = useGame();
   
   // Game state
   const [cards, setCards] = useState<CardType[]>([]);
@@ -31,6 +34,9 @@ const MemoryGame = () => {
   const [playSuccessSound, setPlaySuccessSound] = useState(false);
   const [playFailSound, setPlayFailSound] = useState(false);
   const [playGameOverSound, setPlayGameOverSound] = useState(false);
+  
+  // Settings dialog state
+  const [settingsOpen, setSettingsOpen] = useState(false);
   
   // Get emojis based on difficulty
   const getEmojis = () => {
@@ -241,21 +247,35 @@ const MemoryGame = () => {
             <h1 className="text-3xl font-bold text-center mb-4 md:mb-0">Memory Flip</h1>
             
             <div className="flex space-x-4">
-              <button 
-                onClick={() => initializeGame()}
-                className="flex items-center justify-center bg-white bg-opacity-70 backdrop-filter backdrop-blur-sm p-2 rounded-full shadow-sm hover:shadow transition-all"
-                aria-label="Restart game"
-              >
-                <RotateCcw className="h-5 w-5 text-primary" />
-              </button>
+              <HoverCard>
+                <HoverCardTrigger>
+                  <button 
+                    onClick={() => initializeGame()}
+                    className="flex items-center justify-center bg-white bg-opacity-70 backdrop-filter backdrop-blur-sm p-2 rounded-full shadow-sm hover:shadow transition-all"
+                    aria-label="Restart game"
+                  >
+                    <RotateCcw className="h-5 w-5 text-primary" />
+                  </button>
+                </HoverCardTrigger>
+                <HoverCardContent className="p-2 text-sm">
+                  Restart Game
+                </HoverCardContent>
+              </HoverCard>
               
-              <button 
-                onClick={() => setGameStarted(!gameStarted)}
-                className="flex items-center justify-center bg-white bg-opacity-70 backdrop-filter backdrop-blur-sm p-2 rounded-full shadow-sm hover:shadow transition-all"
-                aria-label="Game settings"
-              >
-                <Settings className="h-5 w-5 text-primary" />
-              </button>
+              <HoverCard>
+                <HoverCardTrigger>
+                  <button 
+                    onClick={() => setSettingsOpen(true)}
+                    className="flex items-center justify-center bg-white bg-opacity-70 backdrop-filter backdrop-blur-sm p-2 rounded-full shadow-sm hover:shadow transition-all"
+                    aria-label="Game settings"
+                  >
+                    <Settings className="h-5 w-5 text-primary" />
+                  </button>
+                </HoverCardTrigger>
+                <HoverCardContent className="p-2 text-sm">
+                  Game Settings
+                </HoverCardContent>
+              </HoverCard>
             </div>
           </div>
           
@@ -366,6 +386,65 @@ const MemoryGame = () => {
               </div>
             </div>
           )}
+          
+          {/* Settings Dialog */}
+          <Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
+            <DialogContent className="sm:max-w-[425px]">
+              <DialogHeader>
+                <DialogTitle>Game Settings</DialogTitle>
+                <DialogDescription>
+                  Customize your Memory Flip experience
+                </DialogDescription>
+              </DialogHeader>
+              
+              <div className="grid gap-4 py-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex flex-col">
+                    <h4 className="font-medium">Sound Effects</h4>
+                    <p className="text-sm text-muted-foreground">
+                      Toggle game sounds on or off
+                    </p>
+                  </div>
+                  <Button 
+                    variant="outline" 
+                    size="icon"
+                    onClick={toggleSound}
+                    className="h-10 w-10"
+                  >
+                    {soundEnabled ? (
+                      <Volume2 className="h-5 w-5" />
+                    ) : (
+                      <VolumeX className="h-5 w-5" />
+                    )}
+                  </Button>
+                </div>
+                
+                <div className="flex flex-col">
+                  <h4 className="font-medium mb-2">Difficulty</h4>
+                  <p className="text-sm text-muted-foreground mb-2">
+                    Change the game difficulty level
+                  </p>
+                  <DifficultySelector />
+                </div>
+                
+                {!user && (
+                  <div className="flex flex-col pt-2">
+                    <h4 className="font-medium">Create a Profile</h4>
+                    <p className="text-sm text-muted-foreground mb-2">
+                      Sign up to save your scores and compete on the leaderboard
+                    </p>
+                    <Link to="/profile">
+                      <Button className="w-full">Create Profile</Button>
+                    </Link>
+                  </div>
+                )}
+              </div>
+              
+              <div className="flex justify-end">
+                <Button onClick={() => setSettingsOpen(false)}>Close</Button>
+              </div>
+            </DialogContent>
+          </Dialog>
         </div>
       </main>
     </div>
