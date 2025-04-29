@@ -1,154 +1,163 @@
 
-import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { Volume2, VolumeX, User, Trophy } from "lucide-react";
 import { useGame } from "@/contexts/GameContext";
-import { Gamepad, User, Trophy, Volume2, VolumeX } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import SoundEffect from "./SoundEffect";
+import { useState } from "react";
 
 const Navigation = () => {
   const location = useLocation();
-  const { user, soundEnabled, toggleSound } = useGame();
-  const [menuOpen, setMenuOpen] = useState(false);
-
-  const toggleMenu = () => {
-    setMenuOpen(!menuOpen);
+  const { soundEnabled, toggleSound } = useGame();
+  const [playSound, setPlaySound] = useState(false);
+  const { user: authUser } = useAuth();
+  const { user } = useGame();
+  
+  const handleToggleSound = () => {
+    toggleSound();
+    setPlaySound(true);
+    setTimeout(() => setPlaySound(false), 100);
   };
-
-  const isActive = (path: string) => {
-    return location.pathname === path;
-  };
-
+  
   return (
-    <nav className="bg-white bg-opacity-80 backdrop-filter backdrop-blur-md shadow-sm sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16">
-          <div className="flex items-center">
-            <Link to="/" className="flex items-center">
-              <Gamepad className="h-8 w-8 text-primary animate-float" />
-              <span className="ml-2 text-xl font-bold text-foreground">
-                Pastel Arcade
-              </span>
-            </Link>
-          </div>
-
-          {/* Desktop Menu */}
-          <div className="hidden md:flex items-center space-x-4">
-            <Link
-              to="/"
-              className={`nav-link ${isActive("/") ? "active" : ""}`}
+    <header className="bg-white bg-opacity-80 backdrop-filter backdrop-blur-md shadow-sm">
+      <SoundEffect sound="click" play={playSound} />
+      
+      <div className="container mx-auto px-4">
+        <div className="flex items-center justify-between h-16">
+          {/* Logo/Home link */}
+          <Link to="/" className="text-lg md:text-xl font-bold text-primary flex items-center">
+            Pastel Arcade
+          </Link>
+          
+          {/* Navigation Links */}
+          <nav className="hidden md:flex space-x-6">
+            <Link 
+              to="/" 
+              className={`text-sm font-medium ${
+                location.pathname === "/" 
+                  ? "text-primary" 
+                  : "text-muted-foreground hover:text-primary"
+              }`}
             >
               Home
             </Link>
-            <Link
-              to="/leaderboard"
-              className={`nav-link ${isActive("/leaderboard") ? "active" : ""}`}
+            <Link 
+              to="/memory-game" 
+              className={`text-sm font-medium ${
+                location.pathname === "/memory-game" 
+                  ? "text-primary" 
+                  : "text-muted-foreground hover:text-primary"
+              }`}
             >
-              Leaderboard
+              Memory Flip
             </Link>
-            <Link
-              to="/profile"
-              className={`nav-link ${isActive("/profile") ? "active" : ""}`}
+            <Link 
+              to="/tic-tac-toe" 
+              className={`text-sm font-medium ${
+                location.pathname === "/tic-tac-toe" 
+                  ? "text-primary" 
+                  : "text-muted-foreground hover:text-primary"
+              }`}
             >
-              {user ? user.username : "Profile"}
+              Tic Tac Toe
             </Link>
+            <Link 
+              to="/snake-game" 
+              className={`text-sm font-medium ${
+                location.pathname === "/snake-game" 
+                  ? "text-primary" 
+                  : "text-muted-foreground hover:text-primary"
+              }`}
+            >
+              Snake Game
+            </Link>
+          </nav>
+          
+          {/* Control Icons */}
+          <div className="flex items-center space-x-4">
             <button 
-              onClick={toggleSound} 
-              className="ml-4 p-2 rounded-full hover:bg-muted transition-colors"
+              onClick={handleToggleSound}
+              className="text-muted-foreground hover:text-primary focus:outline-none transition"
               aria-label={soundEnabled ? "Mute sound" : "Enable sound"}
             >
-              {soundEnabled ? (
-                <Volume2 className="h-5 w-5 text-primary" />
-              ) : (
-                <VolumeX className="h-5 w-5 text-muted-foreground" />
-              )}
+              {soundEnabled ? <Volume2 className="h-5 w-5" /> : <VolumeX className="h-5 w-5" />}
             </button>
-          </div>
-
-          {/* Mobile Menu Button */}
-          <div className="md:hidden flex items-center">
-            <button 
-              onClick={toggleSound} 
-              className="p-2 rounded-full hover:bg-muted transition-colors mr-2"
-              aria-label={soundEnabled ? "Mute sound" : "Enable sound"}
+            
+            <Link 
+              to="/leaderboard" 
+              className="text-muted-foreground hover:text-primary focus:outline-none transition"
+              aria-label="Leaderboard"
             >
-              {soundEnabled ? (
-                <Volume2 className="h-5 w-5 text-primary" />
-              ) : (
-                <VolumeX className="h-5 w-5 text-muted-foreground" />
-              )}
-            </button>
-            <button
-              onClick={toggleMenu}
-              className="p-2 rounded-md text-primary focus:outline-none"
-            >
-              <svg
-                className="h-6 w-6"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
+              <Trophy className="h-5 w-5" />
+            </Link>
+            
+            {authUser ? (
+              <Link 
+                to="/profile" 
+                className="flex items-center space-x-1 text-muted-foreground hover:text-primary focus:outline-none transition"
               >
-                {menuOpen ? (
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                ) : (
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M4 6h16M4 12h16m-7 6h7"
-                  />
-                )}
-              </svg>
-            </button>
+                <span className="text-xl">{user?.avatar || "👤"}</span>
+              </Link>
+            ) : (
+              <Link 
+                to="/auth" 
+                className="text-muted-foreground hover:text-primary focus:outline-none transition"
+                aria-label="Profile"
+              >
+                <User className="h-5 w-5" />
+              </Link>
+            )}
           </div>
         </div>
       </div>
-
-      {/* Mobile Menu */}
-      {menuOpen && (
-        <div className="md:hidden bg-white bg-opacity-90 backdrop-filter backdrop-blur-md animate-fade-in">
-          <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-            <Link
-              to="/"
-              className={`block px-3 py-2 rounded-md text-base font-medium ${
-                isActive("/")
-                  ? "bg-primary bg-opacity-20 text-primary-foreground"
-                  : "hover:bg-muted"
-              }`}
-              onClick={() => setMenuOpen(false)}
-            >
-              Home
-            </Link>
-            <Link
-              to="/leaderboard"
-              className={`block px-3 py-2 rounded-md text-base font-medium ${
-                isActive("/leaderboard")
-                  ? "bg-primary bg-opacity-20 text-primary-foreground"
-                  : "hover:bg-muted"
-              }`}
-              onClick={() => setMenuOpen(false)}
-            >
-              Leaderboard
-            </Link>
-            <Link
-              to="/profile"
-              className={`block px-3 py-2 rounded-md text-base font-medium ${
-                isActive("/profile")
-                  ? "bg-primary bg-opacity-20 text-primary-foreground"
-                  : "hover:bg-muted"
-              }`}
-              onClick={() => setMenuOpen(false)}
-            >
-              {user ? user.username : "Profile"}
-            </Link>
-          </div>
+      
+      {/* Mobile navigation */}
+      <div className="md:hidden border-t border-gray-200">
+        <div className="flex justify-around">
+          <Link 
+            to="/" 
+            className={`flex-1 py-3 text-center text-xs ${
+              location.pathname === "/" 
+                ? "text-primary border-b-2 border-primary" 
+                : "text-muted-foreground"
+            }`}
+          >
+            Home
+          </Link>
+          <Link 
+            to="/memory-game" 
+            className={`flex-1 py-3 text-center text-xs ${
+              location.pathname === "/memory-game" 
+                ? "text-primary border-b-2 border-primary" 
+                : "text-muted-foreground"
+            }`}
+          >
+            Memory
+          </Link>
+          <Link 
+            to="/tic-tac-toe" 
+            className={`flex-1 py-3 text-center text-xs ${
+              location.pathname === "/tic-tac-toe" 
+                ? "text-primary border-b-2 border-primary" 
+                : "text-muted-foreground"
+            }`}
+          >
+            Tic Tac Toe
+          </Link>
+          <Link 
+            to="/snake-game" 
+            className={`flex-1 py-3 text-center text-xs ${
+              location.pathname === "/snake-game" 
+                ? "text-primary border-b-2 border-primary" 
+                : "text-muted-foreground"
+            }`}
+          >
+            Snake
+          </Link>
         </div>
-      )}
-    </nav>
+      </div>
+    </header>
   );
 };
 

@@ -1,15 +1,78 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Navigation from "@/components/Navigation";
 import { useGame } from "@/contexts/GameContext";
 import { Trophy, Medal, Filter } from "lucide-react";
+import { supabase } from "@/lib/supabase";
+import { useAuth } from "@/contexts/AuthContext";
+
+type LeaderboardEntry = {
+  id: string;
+  game: string;
+  score: number;
+  difficulty: string;
+  date: string;
+  user_id: string;
+  username: string;
+  avatar: string;
+};
 
 const Leaderboard = () => {
   const { leaderboard, user } = useGame();
+  const { user: authUser } = useAuth();
   const [filter, setFilter] = useState("all");
+  const [leaderboardData, setLeaderboardData] = useState<LeaderboardEntry[]>([]);
+  const [loading, setLoading] = useState(true);
+  
+  // Fetch leaderboard data from Supabase when component mounts
+  useEffect(() => {
+    fetchLeaderboardData();
+  }, []);
+  
+  // Fetch leaderboard data from Supabase
+  const fetchLeaderboardData = async () => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('scores')
+        .select(`
+          id,
+          game,
+          score,
+          difficulty,
+          date,
+          user_id,
+          profiles(username, avatar)
+        `)
+        .order('score', { ascending: false })
+        .limit(50);
+      
+      if (error) throw error;
+      
+      // Transform data to include username and avatar
+      const transformedData: LeaderboardEntry[] = data.map(item => ({
+        id: item.id,
+        game: item.game,
+        score: item.score,
+        difficulty: item.difficulty,
+        date: item.date,
+        user_id: item.user_id,
+        username: item.profiles?.username || 'Unknown Player',
+        avatar: item.profiles?.avatar || '👤',
+      }));
+      
+      setLeaderboardData(transformedData);
+    } catch (error) {
+      console.error("Error fetching leaderboard:", error);
+      // Fall back to local leaderboard if fetch fails
+      setLeaderboardData([]);
+    } finally {
+      setLoading(false);
+    }
+  };
   
   // Filter leaderboard by game type
-  const filteredLeaderboard = leaderboard.filter(
+  const filteredLeaderboard = leaderboardData.filter(
     (score) => filter === "all" || score.game === filter
   );
   
@@ -78,7 +141,11 @@ const Leaderboard = () => {
           
           {/* Leaderboard Table */}
           <div className="bg-white bg-opacity-80 backdrop-filter backdrop-blur-md rounded-xl shadow-md overflow-hidden">
-            {filteredLeaderboard.length > 0 ? (
+            {loading ? (
+              <div className="text-center py-8">
+                <p className="text-muted-foreground">Loading leaderboard data...</p>
+              </div>
+            ) : filteredLeaderboard.length > 0 ? (
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-muted">
                   <thead className="bg-muted bg-opacity-50">
@@ -106,9 +173,9 @@ const Leaderboard = () => {
                   <tbody className="bg-white bg-opacity-50 divide-y divide-muted">
                     {filteredLeaderboard.map((score, index) => (
                       <tr 
-                        key={index} 
+                        key={score.id} 
                         className={`${
-                          user && score.score === user.highScores[score.game as keyof typeof user.highScores]
+                          authUser && score.user_id === authUser.id
                             ? "bg-pastel-yellow bg-opacity-30"
                             : ""
                         } hover:bg-muted hover:bg-opacity-30 transition-colors`}
@@ -122,17 +189,15 @@ const Leaderboard = () => {
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="font-medium text-foreground">
-                            {user && user.scores.some(
-                              (userScore) => 
-                                userScore.game === score.game && 
-                                userScore.score === score.score && 
-                                userScore.date === score.date
-                            ) ? (
-                              <span className="font-bold">You</span>
-                            ) : (
-                              "Anonymous Player"
-                            )}
+                          <div className="flex items-center">
+                            <span className="text-xl mr-2">{score.avatar}</span>
+                            <div className="font-medium text-foreground">
+                              {authUser && score.user_id === authUser.id ? (
+                                <span className="font-bold">You</span>
+                              ) : (
+                                score.username
+                              )}
+                            </div>
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">

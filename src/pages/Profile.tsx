@@ -3,11 +3,18 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Navigation from "@/components/Navigation";
 import { useGame } from "@/contexts/GameContext";
-import { User, Trophy, Heart } from "lucide-react";
+import { User, Trophy, Heart, LogOut } from "lucide-react";
 import SoundEffect from "@/components/SoundEffect";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { signOut } from "@/lib/supabase";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/components/ui/use-toast";
 
 const Profile = () => {
-  const { user, setUser } = useGame();
+  const { user, setUser, syncWithDatabase } = useGame();
+  const { user: authUser } = useAuth();
+  const { toast } = useToast();
   const navigate = useNavigate();
   const [username, setUsername] = useState("");
   const [selectedAvatar, setSelectedAvatar] = useState("");
@@ -28,7 +35,7 @@ const Profile = () => {
     }
   }, [user]);
   
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!username.trim()) {
@@ -50,25 +57,35 @@ const Profile = () => {
         username,
         avatar: selectedAvatar,
       });
-      setSuccess("Profile updated successfully!");
-    } else {
-      // Create new user
-      setUser({
-        username,
-        avatar: selectedAvatar,
-        scores: [],
-        highScores: {
-          memoryGame: 0,
-          ticTacToe: 0,
-          snakeGame: 0,
-        },
-      });
-      setSuccess("Profile created successfully!");
+      
+      // If authenticated, sync with database
+      if (authUser) {
+        await syncWithDatabase();
+      } else {
+        setSuccess("Profile updated successfully!");
+      }
+      
+      // Play success sound
+      setPlaySound(true);
+      setTimeout(() => setPlaySound(false), 100);
     }
-    
-    // Play success sound
-    setPlaySound(true);
-    setTimeout(() => setPlaySound(false), 100);
+  };
+  
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      navigate("/");
+      toast({
+        title: "Logged out",
+        description: "You have been successfully logged out.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: "Failed to log out. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
   
   return (
@@ -80,10 +97,10 @@ const Profile = () => {
         <div className="max-w-2xl mx-auto bg-white bg-opacity-80 backdrop-filter backdrop-blur-md rounded-xl shadow-md p-6 md:p-8">
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold text-foreground mb-2">
-              {user ? "My Profile" : "Create Profile"}
+              My Profile
             </h1>
             <p className="text-muted-foreground">
-              {user ? "Update your gaming profile" : "Create a profile to track your scores"}
+              {authUser ? "Update your gaming profile" : "Create a profile to track your scores"}
             </p>
           </div>
           
@@ -97,12 +114,12 @@ const Profile = () => {
                 <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <User className="h-5 w-5 text-muted-foreground" />
                 </span>
-                <input
+                <Input
                   type="text"
                   id="username"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  className="pl-10 w-full bg-white bg-opacity-70 border border-muted rounded-lg py-2 px-4 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                  className="pl-10 w-full"
                   placeholder="Enter your username"
                 />
               </div>
@@ -145,12 +162,24 @@ const Profile = () => {
             )}
             
             {/* Submit Button */}
-            <button
+            <Button
               type="submit"
               className="w-full btn-game py-3"
             >
-              {user ? "Update Profile" : "Create Profile"}
-            </button>
+              Update Profile
+            </Button>
+            
+            {/* Logout Button - Only if authenticated */}
+            {authUser && (
+              <Button
+                type="button"
+                onClick={handleLogout}
+                className="w-full flex items-center justify-center gap-2 bg-red-500 hover:bg-red-600 text-white"
+              >
+                <LogOut className="h-4 w-4" />
+                Logout
+              </Button>
+            )}
           </form>
           
           {/* User Stats - Only shown for existing users */}
