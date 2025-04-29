@@ -14,13 +14,13 @@ const SoundEffect = ({ sound, play }: SoundEffectProps) => {
   const { soundEnabled } = useGame();
   const audioRef = useRef<HTMLAudioElement | null>(null);
   
-  // Map of sound effects to their paths
+  // Map of sound effects to their paths (using local files)
   const soundMap: Record<SoundEffect, string> = {
-    click: "https://assets.mixkit.co/sfx/preview/mixkit-simple-click-tone-1112.mp3",
-    success: "https://assets.mixkit.co/sfx/preview/mixkit-game-level-completed-2059.mp3",
-    fail: "https://assets.mixkit.co/sfx/preview/mixkit-negative-tone-interface-tap-2584.mp3",
-    gameOver: "https://assets.mixkit.co/sfx/preview/mixkit-player-losing-or-failing-2042.mp3",
-    move: "https://assets.mixkit.co/sfx/preview/mixkit-quick-jump-arcade-game-239.mp3"
+    click: "/sounds/click.mp3",
+    success: "/sounds/success.mp3",
+    fail: "/sounds/fail.mp3",
+    gameOver: "/sounds/game-over.mp3",
+    move: "/sounds/move.mp3"
   };
   
   useEffect(() => {
