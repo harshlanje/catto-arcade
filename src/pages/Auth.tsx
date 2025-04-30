@@ -100,7 +100,7 @@ const Auth = () => {
       <div className="bg-white bg-opacity-80 backdrop-filter backdrop-blur-md rounded-xl shadow-lg w-full max-w-md p-8">
         <div className="text-center mb-6">
           <Link to="/" className="inline-block mb-6">
-            <h1 className="text-3xl font-bold text-primary">Pastel Arcade</h1>
+            <h1 className="text-3xl font-bold text-primary">Catto's Arcade</h1>
           </Link>
           
           <h2 className="text-2xl font-bold">
