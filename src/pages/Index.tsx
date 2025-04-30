@@ -32,12 +32,12 @@ const Index = () => {
         {/* Welcome Section */}
         <div className="text-center mb-12 animate-fade-in">
           <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4 text-shadow">
-            Welcome to Pastel Arcade
+            Welcome to Catto's Arcade
           </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
             {authUser 
               ? `Welcome back, ${gameUser?.username || 'Player'}! Ready to play some fun games?`
-              : "Create a profile and enjoy a collection of classic games with a pastel twist!"}
+              : "Create a profile and enjoy a collection of classic games with a cat-inspired twist!"}
           </p>
         </div>
         
@@ -75,7 +75,7 @@ const Index = () => {
       {/* Footer */}
       <footer className="bg-white bg-opacity-80 backdrop-filter backdrop-blur-md py-6 mt-8">
         <div className="container mx-auto px-4 text-center text-muted-foreground text-sm">
-          <p>Pastel Arcade &copy; {new Date().getFullYear()} - Built with React & TailwindCSS</p>
+          <p>Catto's Arcade &copy; {new Date().getFullYear()} - Made by Harsh Lanje - Built with React & TailwindCSS</p>
         </div>
       </footer>
     </div>

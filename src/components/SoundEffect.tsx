@@ -25,18 +25,22 @@ const SoundEffect = ({ sound, play }: SoundEffectProps) => {
   
   useEffect(() => {
     // Create audio element on mount
-    audioRef.current = new Audio(soundMap[sound]);
-    audioRef.current.volume = 0.3; // Set volume to 30%
+    const audio = new Audio(soundMap[sound]);
+    audio.volume = 0.3; // Set volume to 30%
     
     // Preload the audio file
-    if (audioRef.current) {
-      audioRef.current.preload = "auto";
-    }
+    audio.preload = "auto";
+    
+    // Load the audio file immediately to prevent delays
+    audio.load();
+    
+    audioRef.current = audio;
     
     // Cleanup on unmount
     return () => {
       if (audioRef.current) {
         audioRef.current.pause();
+        audioRef.current.src = ""; // Clear source
         audioRef.current = null;
       }
     };

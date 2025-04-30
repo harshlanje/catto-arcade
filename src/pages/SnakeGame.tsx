@@ -26,6 +26,7 @@ const SnakeGame = () => {
   const [food, setFood] = useState<Point>({ x: 5, y: 5 });
   const [direction, setDirection] = useState<Direction>("RIGHT");
   const [nextDirection, setNextDirection] = useState<Direction>("RIGHT");
+  const [previousDirection, setPreviousDirection] = useState<Direction>("RIGHT");
   const [speed, setSpeed] = useState(0);
   const [tileCount, setTileCount] = useState(20);
   const [tileSize, setTileSize] = useState(20);
@@ -168,19 +169,55 @@ const SnakeGame = () => {
     // Prevent reversing direction - fixed comparison types
     switch (e.key) {
       case "ArrowUp":
-        if (direction !== "DOWN") setNextDirection("UP");
+        if (direction !== "DOWN" && nextDirection !== "UP") {
+          setNextDirection("UP");
+          // Play move sound only when direction changes
+          const now = Date.now();
+          if (now - lastMoveSoundTime > 300) {
+            setPlayMoveSound(true);
+            setLastMoveSoundTime(now);
+            setTimeout(() => setPlayMoveSound(false), 10);
+          }
+        }
         break;
       case "ArrowDown":
-        if (direction !== "UP") setNextDirection("DOWN");
+        if (direction !== "UP" && nextDirection !== "DOWN") {
+          setNextDirection("DOWN");
+          // Play move sound only when direction changes
+          const now = Date.now();
+          if (now - lastMoveSoundTime > 300) {
+            setPlayMoveSound(true);
+            setLastMoveSoundTime(now);
+            setTimeout(() => setPlayMoveSound(false), 10);
+          }
+        }
         break;
       case "ArrowLeft":
-        if (direction !== "RIGHT") setNextDirection("LEFT");
+        if (direction !== "RIGHT" && nextDirection !== "LEFT") {
+          setNextDirection("LEFT");
+          // Play move sound only when direction changes
+          const now = Date.now();
+          if (now - lastMoveSoundTime > 300) {
+            setPlayMoveSound(true);
+            setLastMoveSoundTime(now);
+            setTimeout(() => setPlayMoveSound(false), 10);
+          }
+        }
         break;
       case "ArrowRight":
-        if (direction !== "LEFT") setNextDirection("RIGHT");
+        if (direction !== "LEFT" && nextDirection !== "RIGHT") {
+          setNextDirection("RIGHT");
+          // Play move sound only when direction changes
+          const now = Date.now();
+          if (now - lastMoveSoundTime > 300) {
+            setPlayMoveSound(true);
+            setLastMoveSoundTime(now);
+            setTimeout(() => setPlayMoveSound(false), 10);
+          }
+        }
         break;
     }
-  }, [gameStarted, gamePaused, gameOver, direction]);
+  }, [gameStarted, gamePaused, gameOver, direction, nextDirection, lastMoveSoundTime]);
   
   // Set up event listeners
   useEffect(() => {
@@ -202,14 +239,42 @@ const SnakeGame = () => {
     if (gamePaused || gameOver) return;
     
     // Prevent reversing direction
-    if (swipeDirection === "UP" && direction !== "DOWN") {
+    if (swipeDirection === "UP" && direction !== "DOWN" && nextDirection !== "UP") {
       setNextDirection("UP");
-    } else if (swipeDirection === "DOWN" && direction !== "UP") {
+      // Play move sound only when direction changes
+      const now = Date.now();
+      if (now - lastMoveSoundTime > 300) {
+        setPlayMoveSound(true);
+        setLastMoveSoundTime(now);
+        setTimeout(() => setPlayMoveSound(false), 10);
+      }
+    } else if (swipeDirection === "DOWN" && direction !== "UP" && nextDirection !== "DOWN") {
       setNextDirection("DOWN");
-    } else if (swipeDirection === "LEFT" && direction !== "RIGHT") {
+      // Play move sound only when direction changes
+      const now = Date.now();
+      if (now - lastMoveSoundTime > 300) {
+        setPlayMoveSound(true);
+        setLastMoveSoundTime(now);
+        setTimeout(() => setPlayMoveSound(false), 10);
+      }
+    } else if (swipeDirection === "LEFT" && direction !== "RIGHT" && nextDirection !== "LEFT") {
       setNextDirection("LEFT");
-    } else if (swipeDirection === "RIGHT" && direction !== "LEFT") {
+      // Play move sound only when direction changes
+      const now = Date.now();
+      if (now - lastMoveSoundTime > 300) {
+        setPlayMoveSound(true);
+        setLastMoveSoundTime(now);
+        setTimeout(() => setPlayMoveSound(false), 10);
+      }
+    } else if (swipeDirection === "RIGHT" && direction !== "LEFT" && nextDirection !== "RIGHT") {
       setNextDirection("RIGHT");
+      // Play move sound only when direction changes
+      const now = Date.now();
+      if (now - lastMoveSoundTime > 300) {
+        setPlayMoveSound(true);
+        setLastMoveSoundTime(now);
+        setTimeout(() => setPlayMoveSound(false), 10);
+      }
     }
   };
   
@@ -218,6 +283,9 @@ const SnakeGame = () => {
     if (!gameStarted || gamePaused || gameOver) return;
     
     const moveSnake = () => {
+      // Save previous direction before updating
+      setPreviousDirection(direction);
+      
       // Set direction from next direction
       setDirection(nextDirection);
       
@@ -348,16 +416,6 @@ const SnakeGame = () => {
       } else {
         // Remove tail if no food eaten
         newSnake.pop();
-        
-        // Play move sound on every third move to avoid sound fatigue
-        // BUT only if enough time has passed since the last sound
-        const now = Date.now();
-        if (now - lastMoveSoundTime > 300) { // Limit to one sound every 300ms
-          setPlayMoveSound(true);
-          setLastMoveSoundTime(now);
-          // Reset the sound flag very quickly to allow replaying
-          setTimeout(() => setPlayMoveSound(false), 10);
-        }
       }
       
       // Update snake
