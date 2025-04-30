@@ -12,9 +12,9 @@ const Index = () => {
   const [playSound, setPlaySound] = useState(false);
 
   // Generate placeholder images for the games using colorful gradients
-  const memoryGameImage = "https://img.freepik.com/free-vector/memory-game-children-cartoon-animals_23-2147803280.jpg";
-  const ticTacToeImage = "https://img.freepik.com/free-vector/gradient-tic-tac-toe-background_23-2149275275.jpg";
-  const snakeGameImage = "https://img.freepik.com/free-vector/snake-pixel-game-screen-green-animal-digital-entertainment_24877-3193.jpg";
+  const memoryGameImage = "https://cdn.discordapp.com/attachments/1367034059209048145/1367043773896458281/memory-flip.png?ex=6813263a&is=6811d4ba&hm=2229fb8ad6359c08e77544d5f7aa7e456c72a48be7f949d94ffe054391ffac65&";
+  const ticTacToeImage = "https://cdn.discordapp.com/attachments/1367034059209048145/1367043774399643698/tic-tac-toe.png?ex=6813263a&is=6811d4ba&hm=1d5717c8f2bce895f7b1d320c2b4c2cf6a394567b92f6adaffb08ccc84679dbd&";
+  const snakeGameImage = "https://cdn.discordapp.com/attachments/1367034059209048145/1367043774169092117/snake.png?ex=6813263a&is=6811d4ba&hm=c4908568f4d49e5bfca8ae137cabf0051cf844472a6fc911dbcc9f805848e63f&";
 
   // Play welcome sound only once when the component mounts
   useEffect(() => {
