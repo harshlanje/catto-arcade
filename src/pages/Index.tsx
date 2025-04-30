@@ -37,7 +37,7 @@ const Index = () => {
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
             {authUser 
               ? `Welcome back, ${gameUser?.username || 'Player'}! Ready to play some fun games?`
-              : "Create a profile and enjoy a collection of classic games with a cat-inspired twist!"}
+              : "Create a profile and enjoy a collection of classic games"}
           </p>
         </div>
         
