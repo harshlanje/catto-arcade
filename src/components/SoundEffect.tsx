@@ -25,7 +25,8 @@ const SoundEffect = ({ sound, play }: SoundEffectProps) => {
   
   useEffect(() => {
     // Create audio element on mount
-    const audio = new Audio(soundMap[sound]);
+    const audio = new Audio();
+    audio.src = soundMap[sound];
     audio.volume = 0.3; // Set volume to 30%
     
     // Preload the audio file
