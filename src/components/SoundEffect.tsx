@@ -28,6 +28,11 @@ const SoundEffect = ({ sound, play }: SoundEffectProps) => {
     audioRef.current = new Audio(soundMap[sound]);
     audioRef.current.volume = 0.3; // Set volume to 30%
     
+    // Preload the audio file
+    if (audioRef.current) {
+      audioRef.current.preload = "auto";
+    }
+    
     // Cleanup on unmount
     return () => {
       if (audioRef.current) {
@@ -41,9 +46,16 @@ const SoundEffect = ({ sound, play }: SoundEffectProps) => {
     if (play && soundEnabled && audioRef.current) {
       // Reset audio to beginning if it's already playing
       audioRef.current.currentTime = 0;
-      audioRef.current.play().catch(error => {
-        console.error("Failed to play audio:", error);
-      });
+      
+      // Play with minimal delay - use a promise with minimal error handling
+      const playPromise = audioRef.current.play();
+      
+      // Only handle the error if the promise exists
+      if (playPromise !== undefined) {
+        playPromise.catch(error => {
+          console.error("Failed to play audio:", error);
+        });
+      }
     }
   }, [play, soundEnabled]);
   

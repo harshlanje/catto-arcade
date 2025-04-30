@@ -32,6 +32,7 @@ const SnakeGame = () => {
   const [playMoveSound, setPlayMoveSound] = useState(false);
   const [playSuccessSound, setPlaySuccessSound] = useState(false);
   const [playGameOverSound, setPlayGameOverSound] = useState(false);
+  const [lastMoveSoundTime, setLastMoveSoundTime] = useState(0);
   
   // Setup canvas and game parameters
   useEffect(() => {
@@ -121,7 +122,7 @@ const SnakeGame = () => {
     }
   }, [snake, tileCount]);
   
-  // Reset game state - Important: Define resetGame after placeFood since it depends on it
+  // Reset game state
   const resetGame = useCallback(() => {
     const initialPos = Math.floor(tileCount / 2);
     setSnake([{ x: initialPos, y: initialPos }]);
@@ -146,7 +147,7 @@ const SnakeGame = () => {
     }, 0);
   }, [tileCount]);
   
-  // Handle arrow key presses - Fixed type comparison errors
+  // Handle arrow key presses
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
     // Start the game if it's not started yet
     if (!gameStarted && !gameOver) {
@@ -190,7 +191,7 @@ const SnakeGame = () => {
     };
   }, [handleKeyDown]);
   
-  // Touch controls for mobile - Fixed type comparison errors
+  // Touch controls for mobile
   const handleSwipe = (swipeDirection: Direction) => {
     // Start the game if it's not started yet
     if (!gameStarted && !gameOver) {
@@ -253,9 +254,9 @@ const SnakeGame = () => {
         setGameOver(true);
         setGameStarted(false);
         
-        // Play game over sound
+        // Play game over sound immediately
         setPlayGameOverSound(true);
-        setTimeout(() => setPlayGameOverSound(false), 100);
+        setTimeout(() => setPlayGameOverSound(false), 10);
         
         // Add score to leaderboard if user exists
         if (user) {
@@ -276,9 +277,9 @@ const SnakeGame = () => {
         setGameOver(true);
         setGameStarted(false);
         
-        // Play game over sound
+        // Play game over sound immediately
         setPlayGameOverSound(true);
-        setTimeout(() => setPlayGameOverSound(false), 100);
+        setTimeout(() => setPlayGameOverSound(false), 10);
         
         // Add score to leaderboard if user exists
         if (user) {
@@ -301,11 +302,11 @@ const SnakeGame = () => {
         // Increase score
         setScore(prev => prev + 10);
         
-        // Play success sound
+        // Play success sound immediately
         setPlaySuccessSound(true);
-        setTimeout(() => setPlaySuccessSound(false), 100);
+        setTimeout(() => setPlaySuccessSound(false), 10);
         
-        // Place new food - using the same approach as in resetGame to avoid circular dependencies
+        // Place new food - using the same approach as in resetGame
         setTimeout(() => {
           const safeMin = 2;
           const safeMax = tileCount - 3;
@@ -348,10 +349,14 @@ const SnakeGame = () => {
         // Remove tail if no food eaten
         newSnake.pop();
         
-        // Play move sound occasionally to avoid too many sounds
-        if (Math.random() < 0.1) {
+        // Play move sound on every third move to avoid sound fatigue
+        // BUT only if enough time has passed since the last sound
+        const now = Date.now();
+        if (now - lastMoveSoundTime > 300) { // Limit to one sound every 300ms
           setPlayMoveSound(true);
-          setTimeout(() => setPlayMoveSound(false), 100);
+          setLastMoveSoundTime(now);
+          // Reset the sound flag very quickly to allow replaying
+          setTimeout(() => setPlayMoveSound(false), 10);
         }
       }
       
@@ -365,7 +370,7 @@ const SnakeGame = () => {
     return () => {
       clearInterval(gameInterval);
     };
-  }, [gameStarted, gamePaused, gameOver, snake, direction, nextDirection, food, tileCount, score, speed, user, currentDifficulty, addScore, placeFood]);
+  }, [gameStarted, gamePaused, gameOver, snake, direction, nextDirection, food, tileCount, score, speed, user, currentDifficulty, addScore, placeFood, lastMoveSoundTime]);
   
   // Draw game with improved food visibility
   useEffect(() => {
