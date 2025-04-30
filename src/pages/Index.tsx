@@ -3,10 +3,12 @@ import { useState, useEffect } from "react";
 import Navigation from "@/components/Navigation";
 import GameCard from "@/components/GameCard";
 import { useGame } from "@/contexts/GameContext";
+import { useAuth } from "@/contexts/AuthContext";
 import SoundEffect from "@/components/SoundEffect";
 
 const Index = () => {
-  const { user } = useGame();
+  const { user: gameUser } = useGame();
+  const { user: authUser } = useAuth();
   const [playSound, setPlaySound] = useState(false);
 
   // Generate placeholder images for the games using colorful gradients
@@ -33,8 +35,8 @@ const Index = () => {
             Welcome to Pastel Arcade
           </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            {user 
-              ? `Welcome back, ${user.username}! Ready to play some fun games?`
+            {authUser 
+              ? `Welcome back, ${gameUser?.username || 'Player'}! Ready to play some fun games?`
               : "Create a profile and enjoy a collection of classic games with a pastel twist!"}
           </p>
         </div>
