@@ -2,8 +2,10 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from '@/integrations/supabase/types';
 
-// Use the client from the integration
-export { supabase } from '@/integrations/supabase/client';
+// Import the client from the integration
+const supabaseUrl = "https://hvgydcelsxkfxyttibqs.supabase.co";
+const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh2Z3lkY2Vsc3hrZnh5dHRpYnFzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDU1NTc4NDUsImV4cCI6MjA2MTEzMzg0NX0.ii7ABrlRi8TEgq2NA_s4O0wDZf59QDhV7GjbUSdu1F4";
+export const supabase = createClient<Database>(supabaseUrl, supabaseKey);
 
 // Auth helpers
 export async function signUp(email: string, password: string, userData: { username: string, avatar: string }) {

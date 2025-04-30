@@ -33,33 +33,47 @@ const Leaderboard = () => {
   const fetchLeaderboardData = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
+      
+      // First, fetch all scores
+      const { data: scoresData, error: scoresError } = await supabase
         .from('scores')
-        .select(`
-          id,
-          game,
-          score,
-          difficulty,
-          date,
-          user_id,
-          profiles(username, avatar)
-        `)
+        .select('*')
         .order('score', { ascending: false })
         .limit(50);
       
-      if (error) throw error;
+      if (scoresError) throw scoresError;
       
-      // Transform data to include username and avatar
-      const transformedData: LeaderboardEntry[] = data.map(item => ({
-        id: item.id,
-        game: item.game,
-        score: item.score,
-        difficulty: item.difficulty,
-        date: item.date,
-        user_id: item.user_id,
-        username: item.profiles?.username || 'Unknown Player',
-        avatar: item.profiles?.avatar || '👤',
-      }));
+      // Then fetch all profiles to get username and avatar
+      const { data: profilesData, error: profilesError } = await supabase
+        .from('profiles')
+        .select('*');
+        
+      if (profilesError) throw profilesError;
+      
+      // Create a map of user_id to profile for easy lookup
+      const profileMap = new Map();
+      profilesData.forEach(profile => {
+        profileMap.set(profile.id, {
+          username: profile.username,
+          avatar: profile.avatar
+        });
+      });
+      
+      // Combine scores with profile data
+      const transformedData: LeaderboardEntry[] = scoresData.map(item => {
+        const profile = profileMap.get(item.user_id) || { username: 'Unknown Player', avatar: '👤' };
+        
+        return {
+          id: item.id,
+          game: item.game,
+          score: item.score,
+          difficulty: item.difficulty,
+          date: item.date,
+          user_id: item.user_id,
+          username: profile.username || 'Unknown Player',
+          avatar: profile.avatar || '👤',
+        };
+      });
       
       setLeaderboardData(transformedData);
     } catch (error) {
