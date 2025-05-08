@@ -11,10 +11,10 @@ const Index = () => {
   const { user: authUser } = useAuth();
   const [playSound, setPlaySound] = useState(false);
 
-  // Generate placeholder images for the games using colorful gradients
-  const memoryGameImage = "https://cdn.discordapp.com/attachments/1367034059209048145/1367043773896458281/memory-flip.png?ex=68171aba&is=6815c93a&hm=13f4b3fe49345bbe004aaa5ddfc7f7e776b488aefb47b00c95db1b888f367f2b&";
-  const ticTacToeImage = "https://cdn.discordapp.com/attachments/1367034059209048145/1367043774399643698/tic-tac-toe.png?ex=68171aba&is=6815c93a&hm=48dc5acb1d1d691e0e116574caafd406537400d6c3c1d6b079f47a3693599980&";
-  const snakeGameImage = "https://cdn.discordapp.com/attachments/1367034059209048145/1367043774169092117/snake.png?ex=68171aba&is=6815c93a&hm=e6c1f16a7e3bd6a1fa81fcc676d519ab7908be8bd382be25747277a86d989df0&";
+  // Use local images for the games
+  const memoryGameImage = "/images/memory-flip.png";
+  const ticTacToeImage = "/images/tic-tac-toe.png";
+  const snakeGameImage = "/images/snake.png";
 
   // Play welcome sound only once when the component mounts
   useEffect(() => {
